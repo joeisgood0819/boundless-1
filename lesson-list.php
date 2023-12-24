@@ -2,6 +2,13 @@
 require_once("boundless_connect.php");
 
 include("main-css.php");
+
+// Step 1: Define the number of records per page
+$perPage = 5;
+
+// Get the current page, default to 1 if not set
+$page = isset($_GET['page']) ? $_GET['page'] : 1;
+
 if (isset($_GET["price-min"]) && isset($_GET["price-max"])) {
     $min = $_GET["price-min"];
     $max = $_GET["price-max"];
@@ -28,6 +35,9 @@ if (isset($_GET["price-min"]) && isset($_GET["price-max"])) {
     ORDER BY lesson.id ASC";
 }
 
+// Step 2: Add LIMIT and OFFSET to the SQL query
+$startItem = ($page - 1) * $perPage;
+$sql .= " LIMIT $startItem, $perPage";
 
 $result = $conn->query($sql);
 
@@ -40,6 +50,9 @@ $rows = $result->fetch_all(MYSQLI_ASSOC);
 //var_dump($rows);
 
 $conn->close();
+
+// Step 3: Display pagination links
+$totalPages = ceil($lessonCount / $perPage);
 
 $id = "id";
 $name = "name";
@@ -89,7 +102,7 @@ $info = "info";
 
             <!-- Divider -->
             <hr class="sidebar-divider my-0">
-            
+
             <!-- Nav Item -->
             <li class="nav-item">
                 <a class="nav-link" href="user-list.php">
@@ -138,7 +151,7 @@ $info = "info";
                         <h6 class="collapse-header">樂器</h6>
                         <a class="collapse-item" href="brand_list.php">品牌</a>
                         <a class="collapse-item" href="instrument_category_list.php">樂器類別</a>
-                        
+
                         <div class="collapse-divider"></div>
                         <h6 class="collapse-header">課程</h6>
                         <a class="collapse-item" href="lesson_category_list.php">課程</a>
@@ -285,12 +298,21 @@ $info = "info";
                             <p class="mb-4">本頁面能夠新增、刪除及查看課程內容。</p>
                         </div>
                         <div class="justify-content-end">
+                            <a class="btn btn-dark" href="lesson-list.php?page=<?= $page ?>&order=1"><i class="bi bi-sort-up"></i></a>
+                            <a class="btn btn-dark" href="lesson-list.php?page=<?= $page ?>&order=2"><i class="bi bi-sort-down"></i></a>
                             <a class="btn btn-dark " title="新增課程" href="add-lesson.php">
                                 <i class="bi bi-plus-lg"></i>
                                 新增
                             </a>
                         </div>
                     </div>
+
+                    <!-- <form class=" col py-2" action="">
+                        <div class="input-group"><input type="text" class="form-control" placeholder="搜尋..." name="search">
+                            <button class="btn btn-dark" type="submit" id=""><i class="bi bi-search"></i></button>
+                    </form>
+                    <a class="btn btn-dark" href="user-list.php?page=<?= $page ?>&order=1"><i class="bi bi-sort-down-alt"></i></a>
+                    <a class="btn btn-dark" href="user-list.php?page=<?= $page ?>&order=2"><i class="bi bi-sort-up"></i></a>-->
 
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4">
@@ -385,6 +407,15 @@ $info = "info";
                                         <?php endif; ?>
                                     </tbody>
                                 </table>
+                                <nav aria-label="Page navigation example">
+                                    <ul class="pagination">
+                                        <?php for ($i = 1; $i <= $lessonCount; $i++) : ?>
+                                            <li class="page-item <?php if ($page == $i) echo "active"; ?>">
+                                                <a class="page-link bg-secondary text-light" href="lesson-list.php?page=<?= $i ?>&order=<?= $order ?>"><?= $i ?></a>
+                                            </li>
+                                        <?php endfor ?>
+                                    </ul>
+                                </nav>
                             </div>
                         </div>
                     </div>
